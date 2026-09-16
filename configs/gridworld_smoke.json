@@ -1,0 +1,16 @@
+{
+  "model": "neo",
+  "seed": 0,
+  "alpha": 1.0,
+  "train_size": 1000,
+  "eval_size": 200,
+  "steps": 200,
+  "batch_size": 64,
+  "lr": 0.0005,
+  "grid_size": 10,
+  "codebook_size": 6,
+  "hidden_dim": 128,
+  "max_steps": 4,
+  "mdl_weight": 0.01,
+  "boundary": "wrap"
+}

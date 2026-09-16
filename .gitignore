@@ -1,0 +1,11 @@
+.venv/
+.uv-cache/
+.ssh/
+__pycache__/
+*.py[cod]
+*.egg-info/
+
+checkpoints/
+data/generated/
+logs/**/*.json
+logs/slurm/
