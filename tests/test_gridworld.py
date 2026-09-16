@@ -46,6 +46,29 @@ class GridWorldTests(unittest.TestCase):
             self.assertEqual(apply_program(sx, item.program).to_index(), item.support_y)
             self.assertEqual(apply_program(qx, item.program).to_index(), item.query_y)
 
+    def test_custom_length_splits(self):
+        long_train = generate_examples(
+            n=20,
+            split="train",
+            seed=0,
+            alpha=1.0,
+            train_min_len=4,
+            train_max_len=8,
+        )
+        short_eval = generate_examples(
+            n=20,
+            split="length_ood",
+            seed=1,
+            alpha=1.0,
+            train_min_len=4,
+            train_max_len=8,
+            length_ood_min_len=1,
+            length_ood_max_len=3,
+        )
+
+        self.assertTrue(all(4 <= len(item.program) <= 8 for item in long_train))
+        self.assertTrue(all(1 <= len(item.program) <= 3 for item in short_eval))
+
     def test_neo_s_sampled_forward_shapes(self):
         import torch
 

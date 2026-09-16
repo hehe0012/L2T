@@ -43,3 +43,19 @@ cd /home/guian/L2T
 scripts/submit_gridworld_full.sh
 python scripts/summarize_gridworld.py --log-dir logs/gridworld_full
 ```
+
+## Length Direction Sweep
+
+Compare standard short-to-long evaluation against reverse long-to-short evaluation:
+
+```bash
+python scripts/run_gridworld_length_direction_sweep.py \
+  --models neo neo_s disc_mono \
+  --alphas 0.66 1.0 \
+  --seeds 0 1 \
+  --train-size 3000 \
+  --eval-size 500 \
+  --steps 600 \
+  --max-steps 8 \
+  --device cpu
+```

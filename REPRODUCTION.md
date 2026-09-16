@@ -165,3 +165,55 @@ GridWorld NEO-S reduced smoke：
 ```text
 /home/guian/L2T/logs/gridworld_full_summary.csv
 ```
+
+## 反向长度泛化实验
+
+目的：比较标准短训长测与反向长训短测。
+
+- `standard_short_to_long`: train program length `1-3`，`length_ood` eval length `4-8`
+- `reverse_long_to_short`: train program length `4-8`，`length_ood` eval length `1-3`
+- 模型：`neo`、`neo_s`、`disc_mono`
+- 参数：`alpha={0.66,1.00}`，`seed={0,1}`，`neo_s_samples=16`
+- reduced CPU 设置：train `3000`，eval `500`，steps `600`，batch `128`，NEO/NEO-S `max_steps=8`
+
+运行命令：
+
+```bash
+.venv/bin/python scripts/run_gridworld_length_direction_sweep.py \
+  --models neo neo_s disc_mono \
+  --alphas 0.66 1.0 \
+  --seeds 0 1 \
+  --neo-s-samples 16 \
+  --train-size 3000 \
+  --eval-size 500 \
+  --steps 600 \
+  --batch-size 128 \
+  --max-steps 8 \
+  --device cpu \
+  --force
+```
+
+结果文件：
+
+```text
+logs/gridworld_length_direction_summary.csv
+```
+
+按 2 个 seed 聚合的 `length_ood` transfer accuracy：
+
+| regime | model | alpha | train len | eval len | ID transfer | eval transfer | eval self |
+| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| `standard_short_to_long` | `disc_mono` | `0.66` | `1-3` | `4-8` | `0.0820` | `0.0260` | `0.2190` |
+| `standard_short_to_long` | `disc_mono` | `1.00` | `1-3` | `4-8` | `0.1040` | `0.0260` | `0.1980` |
+| `standard_short_to_long` | `neo` | `0.66` | `1-3` | `4-8` | `0.0990` | `0.0270` | `0.3780` |
+| `standard_short_to_long` | `neo` | `1.00` | `1-3` | `4-8` | `0.0960` | `0.0370` | `0.3930` |
+| `standard_short_to_long` | `neo_s` | `0.66` | `1-3` | `4-8` | `0.0850` | `0.0320` | `0.6070` |
+| `standard_short_to_long` | `neo_s` | `1.00` | `1-3` | `4-8` | `0.0960` | `0.0400` | `0.6390` |
+| `reverse_long_to_short` | `disc_mono` | `0.66` | `4-8` | `1-3` | `0.0240` | `0.0320` | `0.3390` |
+| `reverse_long_to_short` | `disc_mono` | `1.00` | `4-8` | `1-3` | `0.0270` | `0.0160` | `0.2250` |
+| `reverse_long_to_short` | `neo` | `0.66` | `4-8` | `1-3` | `0.0250` | `0.0250` | `0.4580` |
+| `reverse_long_to_short` | `neo` | `1.00` | `4-8` | `1-3` | `0.0230` | `0.0210` | `0.2840` |
+| `reverse_long_to_short` | `neo_s` | `0.66` | `4-8` | `1-3` | `0.0360` | `0.0230` | `0.6210` |
+| `reverse_long_to_short` | `neo_s` | `1.00` | `4-8` | `1-3` | `0.0240` | `0.0230` | `0.4880` |
+
+初步结论：在这个 reduced 配置下，长训短测没有改善 query transfer。长程序训练更难优化，`ID transfer` 明显下降；`NEO-S` 能提高 support self-explainability，但没有同步提高迁移准确率。这说明当前简化 NEO/NEO-S 仍存在 support 过拟合或 latent program 对齐不足的问题，后续应优先补更贴近论文的 VQ/straight-through、state grounding 和更长 GPU 训练。

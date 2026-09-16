@@ -25,6 +25,8 @@ def main() -> None:
             "model": run_args["model"],
             "alpha": run_args["alpha"],
             "seed": run_args["seed"],
+            "train_lengths": f"{run_args.get('train_min_len', 1)}-{run_args.get('train_max_len', 3)}",
+            "eval_lengths": f"{run_args.get('length_eval_min_len', 4)}-{run_args.get('length_eval_max_len', 8)}",
             "steps": payload["steps"],
             "runtime_sec": round(payload["runtime_sec"], 2),
         }
@@ -42,6 +44,8 @@ def main() -> None:
         "model",
         "alpha",
         "seed",
+        "train_lengths",
+        "eval_lengths",
         "steps",
         "id_self",
         "id_transfer",
@@ -59,4 +63,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-

@@ -29,6 +29,10 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--batch-size", type=int, default=64)
     parser.add_argument("--lr", type=float, default=5e-4)
     parser.add_argument("--grid-size", type=int, default=10)
+    parser.add_argument("--train-min-len", type=int, default=1)
+    parser.add_argument("--train-max-len", type=int, default=3)
+    parser.add_argument("--length-eval-min-len", type=int, default=4)
+    parser.add_argument("--length-eval-max-len", type=int, default=8)
     parser.add_argument("--codebook-size", type=int, default=None)
     parser.add_argument("--hidden-dim", type=int, default=128)
     parser.add_argument("--max-steps", type=int, default=4)
@@ -119,6 +123,8 @@ def main() -> None:
         seed=args.seed,
         alpha=args.alpha,
         size=args.grid_size,
+        train_min_len=args.train_min_len,
+        train_max_len=args.train_max_len,
         boundary=args.boundary,
     )
     id_eval_size = args.id_eval_size or args.eval_size
@@ -131,6 +137,8 @@ def main() -> None:
             seed=args.seed + 101,
             alpha=args.alpha,
             size=args.grid_size,
+            train_min_len=args.train_min_len,
+            train_max_len=args.train_max_len,
             boundary=args.boundary,
         ),
         "comp_ood": generate_examples(
@@ -139,6 +147,8 @@ def main() -> None:
             seed=args.seed + 202,
             alpha=args.alpha,
             size=args.grid_size,
+            train_min_len=args.train_min_len,
+            train_max_len=args.train_max_len,
             boundary=args.boundary,
         ),
         "length_ood": generate_examples(
@@ -147,6 +157,10 @@ def main() -> None:
             seed=args.seed + 303,
             alpha=args.alpha,
             size=args.grid_size,
+            train_min_len=args.train_min_len,
+            train_max_len=args.train_max_len,
+            length_ood_min_len=args.length_eval_min_len,
+            length_ood_max_len=args.length_eval_max_len,
             boundary=args.boundary,
         ),
     }
