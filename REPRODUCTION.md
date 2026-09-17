@@ -157,6 +157,18 @@ GridWorld NEO-S reduced smoke：
   - 输出目录：`/home/guian/L2T/logs/gridworld_neo_s_full`
   - Checkpoint 目录：`/home/guian/L2T/checkpoints/gridworld_neo_s_full`
   - 提交时间：`2026-09-17T02:20:33 UTC`
+- 当前已提交预训练后 full sweep：
+  - State autoencoder pretrain job: `1552`
+  - NEO-S pretrained full array job: `1553`
+  - Dependency: `afterok:1552`
+  - Job names: `guian-l2t-state-ae` -> `guian-l2t-neo-s-pre`
+  - Comment/tag: `guian`
+  - Pretrain resources：`1 x NVIDIA H200`，`4 CPU`，`16G` 内存，time limit `02:00:00`
+  - Full resources：每个 task `1 x NVIDIA H200`，`8 CPU`，`64G` 内存，time limit `24:00:00`
+  - Pretrain output：`/home/guian/L2T/checkpoints/gridworld_state_autoencoder.pt`
+  - Full output：`/home/guian/L2T/logs/gridworld_neo_s_full_pretrained`
+  - Full checkpoints：`/home/guian/L2T/checkpoints/gridworld_neo_s_full_pretrained`
+  - 提交时间：`2026-09-17T03:24:20 UTC`
 
 按 3 个 seed 聚合的 transfer accuracy：
 
