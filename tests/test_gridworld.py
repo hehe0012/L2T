@@ -38,6 +38,13 @@ class GridWorldTests(unittest.TestCase):
         self.assertGreater(len(comp), 0)
         self.assertEqual(len(train) + len(comp), 84)
 
+    def test_program_split_includes_gridworld_anchors(self):
+        train, _ = split_programs(alpha=0.33, seed=0)
+        self.assertIn((0, 0, 0), train)
+        self.assertIn((1, 1, 1), train)
+        self.assertIn((2, 2, 2), train)
+        self.assertIn((3, 3, 3), train)
+
     def test_generated_example_transfer_rule(self):
         examples = generate_examples(n=20, split="train", seed=0, alpha=1.0)
         for item in examples:
@@ -85,6 +92,7 @@ class GridWorldTests(unittest.TestCase):
             query_y,
             hard=True,
             sample_count=3,
+            rollout_steps=4,
         )
 
         self.assertEqual(tuple(output.support_logits.shape), (3, 100))
@@ -92,6 +100,34 @@ class GridWorldTests(unittest.TestCase):
         self.assertEqual(tuple(output.chosen_lengths.shape), (3,))
         self.assertTrue(torch.all(output.chosen_lengths >= 1))
         self.assertTrue(torch.all(output.chosen_lengths <= 4))
+
+    def test_recurrent_policy_supports_longer_eval_than_train_rollout(self):
+        import torch
+
+        model = build_model("neo", grid_size=10, codebook_size=6, hidden_dim=16, max_steps=10)
+        support_x = torch.tensor([0, 11])
+        support_y = torch.tensor([1, 12])
+        query_x = torch.tensor([30, 41])
+        query_y = torch.tensor([31, 42])
+
+        train_output = model(
+            support_x,
+            support_y,
+            query_x,
+            query_y,
+            rollout_steps=4,
+        )
+        length_output = model(
+            support_x,
+            support_y,
+            query_x,
+            query_y,
+            hard=True,
+            rollout_steps=10,
+        )
+
+        self.assertEqual(tuple(train_output.code_logits.shape), (2, 4, 6))
+        self.assertEqual(tuple(length_output.code_logits.shape), (2, 10, 6))
 
 
 if __name__ == "__main__":

@@ -121,20 +121,42 @@ def split_programs(
     min_len: int = 1,
     max_len: int = 3,
     alpha: float = 1.0,
+    seed: int = 0,
+    use_anchors: bool = True,
 ) -> tuple[list[tuple[int, ...]], list[tuple[int, ...]]]:
     """Create deterministic train and compositional-OOD program pools.
 
     `alpha` controls the fraction of short programs exposed during training.
-    The remaining short programs become a compositional-OOD pool. This is an
-    implementation assumption for the first reproduction pass.
+    For the paper-aligned GridWorld split, the four triple-move anchor programs
+    are always included, and alpha is applied to the remaining short programs.
     """
 
     if not 0.0 < alpha <= 1.0:
         raise ValueError("alpha must be in (0, 1]")
 
     programs = enumerate_programs(min_len=min_len, max_len=max_len)
-    train_count = max(1, int(round(len(programs) * alpha)))
-    return programs[:train_count], programs[train_count:]
+    if not use_anchors:
+        train_count = max(1, int(round(len(programs) * alpha)))
+        return programs[:train_count], programs[train_count:]
+
+    anchors = [
+        (action, action, action)
+        for action in range(len(ACTIONS))
+        if min_len <= 3 <= max_len
+    ]
+    anchor_set = set(anchors)
+    remaining = [program for program in programs if program not in anchor_set]
+    rng = random.Random(seed)
+    shuffled = list(remaining)
+    rng.shuffle(shuffled)
+    train_count = int(round(len(shuffled) * alpha))
+    train_count = min(len(shuffled), max(0, train_count))
+    train_programs = anchors + sorted(shuffled[:train_count])
+    comp_programs = sorted(shuffled[train_count:])
+    if not train_programs:
+        train_programs = [programs[0]]
+        comp_programs = programs[1:]
+    return train_programs, comp_programs
 
 
 def sample_state(rng: random.Random, *, size: int = 10) -> GridState:
@@ -177,6 +199,8 @@ def generate_examples(
     train_max_len: int = 3,
     length_ood_min_len: int = 4,
     length_ood_max_len: int = 8,
+    split_seed: int = 0,
+    use_anchors: bool = True,
     boundary: BoundaryMode = "wrap",
 ) -> list[GridExample]:
     """Generate a deterministic dataset split."""
@@ -186,6 +210,8 @@ def generate_examples(
         min_len=train_min_len,
         max_len=train_max_len,
         alpha=alpha,
+        seed=split_seed,
+        use_anchors=use_anchors,
     )
 
     if split in {"train", "id"}:
@@ -208,4 +234,3 @@ def iter_batches(items: Sequence[GridExample], batch_size: int) -> Iterator[list
         raise ValueError("batch_size must be positive")
     for start in range(0, len(items), batch_size):
         yield list(items[start : start + batch_size])
-

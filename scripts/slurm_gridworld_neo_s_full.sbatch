@@ -34,6 +34,11 @@ case "$ALPHA_INDEX" in
   *) echo "invalid ALPHA_INDEX=${ALPHA_INDEX}" >&2; exit 2 ;;
 esac
 
+case "$ALPHA" in
+  "1.00") COMP_EVAL_SIZE="0" ;;
+  *) COMP_EVAL_SIZE="10000" ;;
+esac
+
 case "$SEED_INDEX" in
   0) SEED="0" ;;
   1) SEED="1" ;;
@@ -54,12 +59,24 @@ export OMP_NUM_THREADS="${SLURM_CPUS_PER_TASK:-8}"
   --alpha "${ALPHA}" \
   --train-size 100000 \
   --id-eval-size 10000 \
-  --comp-eval-size 10000 \
+  --comp-eval-size "${COMP_EVAL_SIZE}" \
   --length-eval-size 20000 \
   --steps 20000 \
   --batch-size 128 \
   --lr 5e-4 \
+  --weight-decay 1e-2 \
+  --warmup-ratio 0.05 \
+  --min-lr-ratio 0.1 \
+  --grad-clip 1.0 \
+  --policy-lr-scale 0.25 \
+  --transition-lr-scale 1.0 \
+  --gumbel-tau-start 0.3 \
+  --gumbel-tau-end 0.1 \
+  --hidden-dim 32 \
   --max-steps 10 \
+  --train-rollout-steps 4 \
+  --eval-rollout-steps 4 \
+  --length-eval-rollout-steps 10 \
   --neo-s-samples "${SAMPLES}" \
   --device cuda \
   --out "logs/gridworld_neo_s_full/${RUN_NAME}.json" \

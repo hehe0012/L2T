@@ -31,36 +31,35 @@ Paper reference: [Learning to Theorize the World from Observation](https://arxiv
 | --- | --- | --- |
 | Train data | `100000` examples | `100000` in full Slurm runs |
 | ID eval | `10000` examples | `10000` in full Slurm runs |
-| Comp OOD eval | `10000` for `alpha=0.33/0.66`; none for `alpha=1.00` | `10000`; current generator falls back to train programs when no comp split exists |
+| Comp OOD eval | `10000` for `alpha=0.33/0.66`; none for `alpha=1.00` | scripts support `--comp-eval-size 0`; full Slurm scripts skip comp OOD for `alpha=1.00` |
 | Length OOD eval | `20000` examples | `20000` in full Slurm runs |
 | Train program lengths | `1-3` | `1-3` |
 | Length OOD program lengths | `4-8` | `4-8` |
-| Split construction | fixed anchors `UUU`, `DDD`, `LLL`, `RRR`, then alpha-sampled remaining short programs | deterministic lexicographic split; anchors not yet implemented |
-| Train / ID / Comp max transition length | `K=4` | most scripts default to `K=4`; latest NEO-S full used `K=10` for all phases |
-| Length OOD max transition length | `K=10` | `K=10` in latest NEO-S full |
+| Split construction | fixed anchors `UUU`, `DDD`, `LLL`, `RRR`, then alpha-sampled remaining short programs | implemented with deterministic alpha sampling |
+| Train / ID / Comp max transition length | `K=4` | implemented via `--train-rollout-steps 4` and `--eval-rollout-steps 4` |
+| Length OOD max transition length | `K=10` | implemented via `--length-eval-rollout-steps 10` with model `--max-steps 10` |
 | NEO-S sampling budget | `B=64` for GridWorld | `--neo-s-samples 64` in latest NEO-S full |
 | Learning rate | `5e-4` for NEO | `5e-4` |
-| Weight decay | `1e-2` | AdamW default weight decay, currently not explicitly set |
-| LR schedule | warmup plus cosine decay, min LR ratio `0.1` | fixed LR |
-| Gradient clipping | `1.0` | not implemented |
-| Two-timescale LR | policy scale `0.25`, transition scale `1.0` | not implemented |
-| Hidden / feedforward dims | `d_model=32`, `d_ff=128` | embedding/MLP hidden dim `128`; no separate `d_ff` |
+| Weight decay | `1e-2` | implemented via `--weight-decay 1e-2` |
+| LR schedule | warmup plus cosine decay, min LR ratio `0.1` | implemented via `--warmup-ratio` and `--min-lr-ratio` |
+| Gradient clipping | `1.0` | implemented via `--grad-clip 1.0` |
+| Two-timescale LR | policy scale `0.25`, transition scale `1.0` | implemented via optimizer param groups |
+| Hidden / feedforward dims | `d_model=32`, `d_ff=128` | embedding/MLP hidden dim `32`; no separate `d_ff` |
 | Policy / transition nets | FiLM-MLP | simple MLP |
 | State representation | pretrained CNN VAE, state dim `32` | direct discrete state embedding |
 | Latent action | discrete VQ, action dim `16`, codebook size `6` | categorical code embedding, codebook size `6`; no true VQ straight-through |
 | Commitment / VQ loss | commitment cost `0.25`, action VQ loss `1.0` | not implemented |
-| Gumbel-Softmax | tau `0.3 -> 0.1` | not implemented |
+| Gumbel-Softmax | tau `0.3 -> 0.1` | approximated with straight-through Gumbel-Softmax during training |
 | State grounding loss | `0.1` | not implemented |
-| MDL weight | `0.95` for `alpha=0.33/0.66`, `1.00` for `alpha=1.00` | default `0.01`; latest full NEO-S still used default unless overridden |
+| MDL weight | `0.95` for `alpha=0.33/0.66`, `1.00` for `alpha=1.00` | implemented as alpha-dependent default; note the current NLL loss scale differs from the paper's reconstruction loss |
 
 Priority fixes for GridWorld fidelity:
 
-1. Implement the anchor-based alpha split.
-2. Use `K=4` during training / ID / comp inference and `K=10` only for length OOD inference.
-3. Set `lambda_MDL` to `0.95` or `1.00` by alpha.
-4. Add explicit weight decay, warmup plus cosine LR, gradient clipping, and two-timescale learning rates.
-5. Replace categorical action embeddings with a VQ / straight-through latent action path.
-6. Add state grounding loss.
+1. Replace categorical action embeddings with a true VQ / straight-through latent action path and commitment loss.
+2. Add state grounding loss.
+3. Replace the simple MLPs with the paper's FiLM-MLP policy / transition architecture.
+4. Add the pretrained CNN VAE state encoder/decoder path, if reproducing the image-like GridWorld observation setting exactly.
+5. Recalibrate MDL against the current loss scale, or move to the paper's reconstruction loss scale.
 
 ### Arithmetic
 
