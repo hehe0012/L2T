@@ -159,16 +159,20 @@ GridWorld NEO-S reduced smoke：
   - 提交时间：`2026-09-17T02:20:33 UTC`
 - 当前已提交预训练后 full sweep：
   - State autoencoder pretrain job: `1552`
-  - NEO-S pretrained full array job: `1553`
+  - 原 NEO-S pretrained full array job: `1553`，因 array throttle `%8` 会同时占用 8 张 H200，已取消。
+  - 当前 NEO-S pretrained full array job: `1562`
   - Dependency: `afterok:1552`
   - Job names: `guian-l2t-state-ae` -> `guian-l2t-neo-s-pre`
   - Comment/tag: `guian`
   - Pretrain resources：`1 x NVIDIA H200`，`4 CPU`，`16G` 内存，time limit `02:00:00`
   - Full resources：每个 task `1 x NVIDIA H200`，`8 CPU`，`64G` 内存，time limit `24:00:00`
+  - Full array throttle：`0-8%1`，一次只运行 1 个 task，避免同时占用多张 H200。
   - Pretrain output：`/home/guian/L2T/checkpoints/gridworld_state_autoencoder.pt`
   - Full output：`/home/guian/L2T/logs/gridworld_neo_s_full_pretrained`
   - Full checkpoints：`/home/guian/L2T/checkpoints/gridworld_neo_s_full_pretrained`
-  - 提交时间：`2026-09-17T03:24:20 UTC`
+  - Pretrain 提交时间：`2026-09-17T03:24:20 UTC`
+  - Full `%1` 重新提交时间：`2026-09-17T03:30:29 UTC`
+  - 当前集群未暴露可申请的 GPU 显存分片/MIG GRES，只能按整张 H200 申请；`1562_0` 运行时实测显存约 `887 MiB / 143771 MiB`。
 
 按 3 个 seed 聚合的 transfer accuracy：
 

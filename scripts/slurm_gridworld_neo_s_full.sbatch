@@ -8,7 +8,7 @@
 #SBATCH --mem=64G
 #SBATCH --gres=gpu:nvidia_h200:1
 #SBATCH --time=24:00:00
-#SBATCH --array=0-8%8
+#SBATCH --array=0-8%1
 #SBATCH --output=/home/guian/L2T/logs/slurm/%x_%A_%a.out
 #SBATCH --error=/home/guian/L2T/logs/slurm/%x_%A_%a.err
 
