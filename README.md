@@ -100,6 +100,22 @@ python scripts/run_gridworld.py --model neo_s --neo-s-samples 8 --train-size 100
 
 The Slurm-visible mirror lives at `/home/guian/L2T` because compute nodes use a different `/raid` view.
 
+Pretrain the GridWorld state encoder/decoder first, then run the full NEO-S sweep:
+
+```bash
+cd /home/guian/L2T
+scripts/submit_gridworld_pretrain_then_neo_s_full.sh
+```
+
+This submits the full sweep with a Slurm `afterok` dependency on the state autoencoder pretraining job. The NEO-S run loads `checkpoints/gridworld_state_autoencoder.pt` with `--freeze-state-autoencoder` and writes to:
+
+```text
+logs/gridworld_neo_s_full_pretrained
+checkpoints/gridworld_neo_s_full_pretrained
+```
+
+Older full sweep entry point:
+
 ```bash
 cd /home/guian/L2T
 scripts/submit_gridworld_full.sh

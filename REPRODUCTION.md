@@ -10,6 +10,7 @@
 - 已实现 NEO 风格组合 latent program 模型的初始 PyTorch 版本。
 - 已实现 NEO-S sampled inference：评估时从 programmer 分布采样候选 latent program，用 support likelihood + MDL 长度惩罚选择解释，再迁移到 query。
 - 已补入更贴近论文的 GridWorld 机制：CNN state encoder/decoder path、FiLM policy/transition、VQ action codebook、commitment loss、state grounding loss、Gumbel-Softmax training path。
+- 已新增 GridWorld state encoder/decoder 预训练脚本，并新增 Slurm dependency 流程：先预训练 `checkpoints/gridworld_state_autoencoder.pt`，成功后再运行 NEO-S full sweep。
 - 已实现 Disc-Mono baseline 的初始 PyTorch 版本。
 - 已安装本地虚拟环境依赖，并完成 CPU smoke run。
 - 发现 Slurm 计算节点上的 `/raid` 是节点本地视图；GPU 作业需要使用共享路径 `/home/guian/L2T`。

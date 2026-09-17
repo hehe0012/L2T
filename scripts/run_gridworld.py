@@ -57,6 +57,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--commitment-cost", type=float, default=0.25)
     parser.add_argument("--vq-loss-weight", type=float, default=1.0)
     parser.add_argument("--grounding-loss-weight", type=float, default=0.1)
+    parser.add_argument("--state-autoencoder-checkpoint", type=Path, default=None)
+    parser.add_argument("--freeze-state-autoencoder", action="store_true")
     parser.add_argument("--boundary", choices=["wrap", "clamp"], default="wrap")
     parser.add_argument("--device", default="cuda")
     parser.add_argument("--out", type=Path, default=Path("logs/gridworld_smoke.json"))
@@ -142,6 +144,31 @@ def evaluate(
         "transfer_accuracy": exact_match_accuracy(predictions, targets),
         "mean_chosen_length": sum(lengths) / len(lengths) if lengths else 0.0,
     }
+
+
+def load_state_autoencoder(model, path: Path, *, device: str, freeze: bool) -> None:
+    import torch
+
+    checkpoint = torch.load(path, map_location=device)
+    state_encoder = checkpoint.get("state_encoder")
+    state_decoder = checkpoint.get("state_decoder")
+    if state_encoder is None or state_decoder is None:
+        raise ValueError(f"{path} does not contain state_encoder/state_decoder weights")
+    model.module.state_encoder.load_state_dict(state_encoder)
+    model.module.state_decoder.load_state_dict(state_decoder)
+    if freeze:
+        for parameter in model.module.state_encoder.parameters():
+            parameter.requires_grad = False
+        for parameter in model.module.state_decoder.parameters():
+            parameter.requires_grad = False
+
+
+def serializable_args(args: argparse.Namespace) -> dict[str, object]:
+    payload = vars(args).copy()
+    for key in ["out", "checkpoint_out", "state_autoencoder_checkpoint"]:
+        if payload.get(key) is not None:
+            payload[key] = str(payload[key])
+    return payload
 
 
 def main() -> None:
@@ -238,9 +265,18 @@ def main() -> None:
         })
 
     model = build_model(args.model, **model_kwargs).to(args.device)
+    if args.state_autoencoder_checkpoint is not None:
+        load_state_autoencoder(
+            model,
+            args.state_autoencoder_checkpoint,
+            device=args.device,
+            freeze=args.freeze_state_autoencoder,
+        )
     policy_params = []
     transition_params = []
     for name, parameter in model.module.named_parameters():
+        if not parameter.requires_grad:
+            continue
         if name.startswith("policy.") or name.startswith("action_codebook."):
             policy_params.append(parameter)
         else:
@@ -315,20 +351,14 @@ def main() -> None:
         torch.save(
             {
                 "model": model.state_dict(),
-                "args": vars(args) | {
-                    "out": str(args.out),
-                    "checkpoint_out": str(args.checkpoint_out),
-                },
+                "args": serializable_args(args),
                 "model_kwargs": model_kwargs,
                 "metrics": metrics,
             },
             args.checkpoint_out,
         )
     payload = {
-        "args": vars(args) | {
-            "out": str(args.out),
-            "checkpoint_out": str(args.checkpoint_out) if args.checkpoint_out else None,
-        },
+        "args": serializable_args(args),
         "model_kwargs": model_kwargs,
         "effective_mdl_weight": mdl_weight,
         "steps": step,
