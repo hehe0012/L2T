@@ -46,12 +46,17 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--no-anchors", action="store_true")
     parser.add_argument("--codebook-size", type=int, default=None)
     parser.add_argument("--hidden-dim", type=int, default=32)
+    parser.add_argument("--ff-dim", type=int, default=128)
+    parser.add_argument("--action-dim", type=int, default=16)
     parser.add_argument("--max-steps", type=int, default=10)
     parser.add_argument("--train-rollout-steps", type=int, default=4)
     parser.add_argument("--eval-rollout-steps", type=int, default=4)
     parser.add_argument("--length-eval-rollout-steps", type=int, default=None)
     parser.add_argument("--neo-s-samples", type=int, default=16)
     parser.add_argument("--mdl-weight", type=float, default=None)
+    parser.add_argument("--commitment-cost", type=float, default=0.25)
+    parser.add_argument("--vq-loss-weight", type=float, default=1.0)
+    parser.add_argument("--grounding-loss-weight", type=float, default=0.1)
     parser.add_argument("--boundary", choices=["wrap", "clamp"], default="wrap")
     parser.add_argument("--device", default="cuda")
     parser.add_argument("--out", type=Path, default=Path("logs/gridworld_smoke.json"))
@@ -213,7 +218,12 @@ def main() -> None:
     model_kwargs = {
         "grid_size": args.grid_size,
         "hidden_dim": args.hidden_dim,
+        "ff_dim": args.ff_dim,
+        "action_dim": args.action_dim,
         "mdl_weight": mdl_weight,
+        "commitment_cost": args.commitment_cost,
+        "vq_loss_weight": args.vq_loss_weight,
+        "grounding_loss_weight": args.grounding_loss_weight,
     }
     if args.model in {"neo", "neo_s"}:
         model_kwargs.update({
@@ -222,15 +232,16 @@ def main() -> None:
         })
     else:
         model_kwargs.update({
-            "codebook_size": args.codebook_size or 32,
+            "codebook_size": args.codebook_size or 36,
             "max_steps": 1,
+            "grounding_loss_weight": 0.0,
         })
 
     model = build_model(args.model, **model_kwargs).to(args.device)
     policy_params = []
     transition_params = []
     for name, parameter in model.module.named_parameters():
-        if name.startswith("programmer."):
+        if name.startswith("policy.") or name.startswith("action_codebook."):
             policy_params.append(parameter)
         else:
             transition_params.append(parameter)
@@ -249,6 +260,8 @@ def main() -> None:
     start_time = time.time()
     step = 0
     last_loss = None
+    last_vq_loss = None
+    last_grounding_loss = None
     while step < args.steps:
         for batch in train_loader:
             batch = move_batch(batch, args.device)
@@ -277,6 +290,10 @@ def main() -> None:
             optimizer.param_groups[0]["lr"] = args.lr * args.policy_lr_scale * lr_scale
             optimizer.param_groups[1]["lr"] = args.lr * args.transition_lr_scale * lr_scale
             last_loss = float(output.loss.detach().cpu())
+            if output.vq_loss is not None:
+                last_vq_loss = float(output.vq_loss.detach().cpu())
+            if output.grounding_loss is not None:
+                last_grounding_loss = float(output.grounding_loss.detach().cpu())
             step += 1
             if step >= args.steps:
                 break
@@ -316,6 +333,8 @@ def main() -> None:
         "effective_mdl_weight": mdl_weight,
         "steps": step,
         "last_train_loss": last_loss,
+        "last_vq_loss": last_vq_loss,
+        "last_grounding_loss": last_grounding_loss,
         "runtime_sec": time.time() - start_time,
         "metrics": metrics,
     }

@@ -101,6 +101,29 @@ class GridWorldTests(unittest.TestCase):
         self.assertTrue(torch.all(output.chosen_lengths >= 1))
         self.assertTrue(torch.all(output.chosen_lengths <= 4))
 
+    def test_neo_forward_reports_vq_and_grounding_losses(self):
+        import torch
+
+        model = build_model("neo", grid_size=10, codebook_size=6, hidden_dim=16, max_steps=4)
+        support_x = torch.tensor([0, 11])
+        support_y = torch.tensor([1, 12])
+        query_x = torch.tensor([30, 41])
+        query_y = torch.tensor([31, 42])
+
+        output = model(
+            support_x,
+            support_y,
+            query_x,
+            query_y,
+            rollout_steps=4,
+            gumbel_tau=0.3,
+        )
+
+        self.assertIsNotNone(output.vq_loss)
+        self.assertIsNotNone(output.grounding_loss)
+        self.assertGreaterEqual(float(output.vq_loss.detach()), 0.0)
+        self.assertGreaterEqual(float(output.grounding_loss.detach()), 0.0)
+
     def test_recurrent_policy_supports_longer_eval_than_train_rollout(self):
         import torch
 

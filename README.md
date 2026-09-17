@@ -44,22 +44,20 @@ Paper reference: [Learning to Theorize the World from Observation](https://arxiv
 | LR schedule | warmup plus cosine decay, min LR ratio `0.1` | implemented via `--warmup-ratio` and `--min-lr-ratio` |
 | Gradient clipping | `1.0` | implemented via `--grad-clip 1.0` |
 | Two-timescale LR | policy scale `0.25`, transition scale `1.0` | implemented via optimizer param groups |
-| Hidden / feedforward dims | `d_model=32`, `d_ff=128` | embedding/MLP hidden dim `32`; no separate `d_ff` |
-| Policy / transition nets | FiLM-MLP | simple MLP |
-| State representation | pretrained CNN VAE, state dim `32` | direct discrete state embedding |
-| Latent action | discrete VQ, action dim `16`, codebook size `6` | categorical code embedding, codebook size `6`; no true VQ straight-through |
-| Commitment / VQ loss | commitment cost `0.25`, action VQ loss `1.0` | not implemented |
+| Hidden / feedforward dims | `d_model=32`, `d_ff=128` | implemented as state dim `32`, feedforward dim `128` |
+| Policy / transition nets | FiLM-MLP | implemented as FiLM-conditioned MLP policy and transition |
+| State representation | pretrained CNN VAE, state dim `32` | CNN encoder/decoder state path implemented; separate 500-epoch VAE pretraining is not yet run |
+| Latent action | discrete VQ, action dim `16`, codebook size `6` | implemented as nearest-code VQ path with action dim `16` and codebook size `6` |
+| Commitment / VQ loss | commitment cost `0.25`, action VQ loss `1.0` | implemented via `--commitment-cost 0.25` and `--vq-loss-weight 1.0` |
 | Gumbel-Softmax | tau `0.3 -> 0.1` | approximated with straight-through Gumbel-Softmax during training |
-| State grounding loss | `0.1` | not implemented |
+| State grounding loss | `0.1` | implemented as decode-encode state grounding with stop-gradient target |
 | MDL weight | `0.95` for `alpha=0.33/0.66`, `1.00` for `alpha=1.00` | implemented as alpha-dependent default; note the current NLL loss scale differs from the paper's reconstruction loss |
 
 Priority fixes for GridWorld fidelity:
 
-1. Replace categorical action embeddings with a true VQ / straight-through latent action path and commitment loss.
-2. Add state grounding loss.
-3. Replace the simple MLPs with the paper's FiLM-MLP policy / transition architecture.
-4. Add the pretrained CNN VAE state encoder/decoder path, if reproducing the image-like GridWorld observation setting exactly.
-5. Recalibrate MDL against the current loss scale, or move to the paper's reconstruction loss scale.
+1. Add and run the separate CNN VAE pretraining stage, then load/freeze or initialize the NEO state path from that checkpoint.
+2. Recalibrate MDL against the current cross-entropy loss scale, or move to the paper's exact reconstruction loss scale.
+3. Run a fresh full NEO-S Slurm sweep after the architecture changes.
 
 ### Arithmetic
 

@@ -79,10 +79,15 @@ export OMP_NUM_THREADS="${SLURM_CPUS_PER_TASK:-8}"
   --gumbel-tau-start 0.3 \
   --gumbel-tau-end 0.1 \
   --hidden-dim 32 \
+  --ff-dim 128 \
+  --action-dim 16 \
   --max-steps 10 \
   --train-rollout-steps 4 \
   --eval-rollout-steps 4 \
   --length-eval-rollout-steps 10 \
+  --commitment-cost 0.25 \
+  --vq-loss-weight 1.0 \
+  --grounding-loss-weight 0.1 \
   --neo-s-samples 16 \
   --device cuda \
   --out "logs/gridworld_full/${RUN_NAME}.json" \
