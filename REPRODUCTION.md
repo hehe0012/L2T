@@ -141,6 +141,20 @@ GridWorld NEO-S reduced smoke：
   - Array: `0-26%8`
   - 实验矩阵：`neo`、`disc_mono`、`neo_s` x `alpha={0.33,0.66,1.00}` x `seed={0,1,2}`
   - NEO-S 采样数：`--neo-s-samples 16`
+- 当前已提交 NEO-S full sweep：
+  - Slurm array job: `1534`
+  - Job name: `guian-l2t-neo-s-full`
+  - Comment/tag: `guian`
+  - Array: `0-8%8`
+  - 每个 task 请求：`1 x NVIDIA H200`，`8 CPU`，`64G` 内存
+  - GRES/TRES：`gres/gpu:nvidia_h200:1`
+  - 实验矩阵：`neo_s` x `alpha={0.33,0.66,1.00}` x `seed={0,1,2}`
+  - 数据规模：train `100000`，ID eval `10000`，Comp OOD eval `10000`，Length OOD eval `20000`
+  - 训练步数：`20000`
+  - `max_steps=10`，`neo_s_samples=64`
+  - 输出目录：`/home/guian/L2T/logs/gridworld_neo_s_full`
+  - Checkpoint 目录：`/home/guian/L2T/checkpoints/gridworld_neo_s_full`
+  - 提交时间：`2026-09-17T02:20:33 UTC`
 
 按 3 个 seed 聚合的 transfer accuracy：
 
