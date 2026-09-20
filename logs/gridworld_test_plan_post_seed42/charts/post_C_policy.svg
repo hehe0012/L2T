@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="560">
+<rect width="100%" height="100%" fill="white"/>
+<text x="600.0" y="34" text-anchor="middle" font-family="Arial" font-size="22" font-weight="bold">C: Policy diagnostics</text>
+<line x1="90" y1="70.0" x2="1150" y2="70.0" stroke="#e5e7eb"/>
+<text x="82" y="74.0" text-anchor="end" font-family="Arial" font-size="11">2.68</text>
+<line x1="90" y1="167.5" x2="1150" y2="167.5" stroke="#e5e7eb"/>
+<text x="82" y="171.5" text-anchor="end" font-family="Arial" font-size="11">2.01</text>
+<line x1="90" y1="265.0" x2="1150" y2="265.0" stroke="#e5e7eb"/>
+<text x="82" y="269.0" text-anchor="end" font-family="Arial" font-size="11">1.34</text>
+<line x1="90" y1="362.5" x2="1150" y2="362.5" stroke="#e5e7eb"/>
+<text x="82" y="366.5" text-anchor="end" font-family="Arial" font-size="11">0.67</text>
+<line x1="90" y1="460.0" x2="1150" y2="460.0" stroke="#e5e7eb"/>
+<text x="82" y="464.0" text-anchor="end" font-family="Arial" font-size="11">0</text>
+<text x="266.7" y="488" text-anchor="middle" font-family="Arial" font-size="12">alpha=0.33</text>
+<rect x="134.2" y="418.0" width="70.7" height="42.0" fill="#2563eb"/>
+<rect x="222.5" y="129.5" width="70.7" height="330.5" fill="#059669"/>
+<rect x="310.8" y="314.0" width="70.7" height="146.0" fill="#dc2626"/>
+<text x="620.0" y="488" text-anchor="middle" font-family="Arial" font-size="12">alpha=0.66</text>
+<rect x="487.5" y="390.6" width="70.7" height="69.4" fill="#2563eb"/>
+<rect x="575.8" y="220.8" width="70.7" height="239.2" fill="#059669"/>
+<rect x="664.2" y="369.1" width="70.7" height="90.9" fill="#dc2626"/>
+<text x="973.3" y="488" text-anchor="middle" font-family="Arial" font-size="12">alpha=1.00</text>
+<rect x="840.8" y="410.8" width="70.7" height="49.2" fill="#2563eb"/>
+<rect x="929.2" y="265.9" width="70.7" height="194.1" fill="#059669"/>
+<rect x="1017.5" y="366.8" width="70.7" height="93.2" fill="#dc2626"/>
+<text x="20" y="265.0" transform="rotate(-90 20 265.0)" text-anchor="middle" font-family="Arial" font-size="12">value</text>
+<rect x="90" y="518" width="14" height="14" fill="#2563eb"/>
+<text x="110" y="530" font-family="Arial" font-size="12">entropy</text>
+<rect x="270" y="518" width="14" height="14" fill="#059669"/>
+<text x="290" y="530" font-family="Arial" font-size="12">y sensitivity</text>
+<rect x="450" y="518" width="14" height="14" fill="#dc2626"/>
+<text x="470" y="530" font-family="Arial" font-size="12">state sensitivity</text>
+</svg>

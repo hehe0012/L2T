@@ -1,4 +1,3 @@
 """Local reproduction scaffold for Learning to Theorize the World from Observation."""
 
-__all__ = ["gridworld", "metrics", "models"]
-
+__all__ = ["arithmetic", "arithmetic_models", "gridworld", "metrics", "models"]

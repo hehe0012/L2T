@@ -18,6 +18,7 @@ The first milestone targets a minimal OTIB GridWorld loop:
 - Disc-Mono baseline: initial PyTorch scaffold
 - Smoke training script: implemented
 - Full paper reproduction: not yet complete
+- Arithmetic Factorization Reasoning: implemented with prime-exponent data, Transformer policy, cross-attention transition, VQ actions, grounding loss, NEO-S sampling, and state embedding pretraining
 
 ## Config Gap vs Paper
 
@@ -39,6 +40,7 @@ Paper reference: [Learning to Theorize the World from Observation](https://arxiv
 | Train / ID / Comp max transition length | `K=4` | implemented via `--train-rollout-steps 4` and `--eval-rollout-steps 4` |
 | Length OOD max transition length | `K=10` | implemented via `--length-eval-rollout-steps 10` with model `--max-steps 10` |
 | NEO-S sampling budget | `B=64` for GridWorld | `--neo-s-samples 64` in latest NEO-S full |
+| Validation | held-out ID examples, `200` samples every epoch | `--validation-size 200 --validation-interval 1`; records `validation_history` and `best_validation` |
 | Learning rate | `5e-4` for NEO | `5e-4` |
 | Weight decay | `1e-2` | implemented via `--weight-decay 1e-2` |
 | LR schedule | warmup plus cosine decay, min LR ratio `0.1` | implemented via `--warmup-ratio` and `--min-lr-ratio` |
@@ -46,7 +48,7 @@ Paper reference: [Learning to Theorize the World from Observation](https://arxiv
 | Two-timescale LR | policy scale `0.25`, transition scale `1.0` | implemented via optimizer param groups |
 | Hidden / feedforward dims | `d_model=32`, `d_ff=128` | implemented as state dim `32`, feedforward dim `128` |
 | Policy / transition nets | FiLM-MLP | implemented as FiLM-conditioned MLP policy and transition |
-| State representation | pretrained CNN VAE, state dim `32` | CNN encoder/decoder state path implemented; separate 500-epoch VAE pretraining is not yet run |
+| State representation | pretrained CNN VAE, state dim `32` | CNN state encoder/decoder path; paper pretraining settings are restored |
 | Latent action | discrete VQ, action dim `16`, codebook size `6` | implemented as nearest-code VQ path with action dim `16` and codebook size `6` |
 | Commitment / VQ loss | commitment cost `0.25`, action VQ loss `1.0` | implemented via `--commitment-cost 0.25` and `--vq-loss-weight 1.0` |
 | Gumbel-Softmax | tau `0.3 -> 0.1` | approximated with straight-through Gumbel-Softmax during training |
@@ -55,13 +57,11 @@ Paper reference: [Learning to Theorize the World from Observation](https://arxiv
 
 Priority fixes for GridWorld fidelity:
 
-1. Add and run the separate CNN VAE pretraining stage, then load/freeze or initialize the NEO state path from that checkpoint.
-2. Recalibrate MDL against the current cross-entropy loss scale, or move to the paper's exact reconstruction loss scale.
-3. Run a fresh full NEO-S Slurm sweep after the architecture changes.
+1. Re-run the paper-standard CNN VAE pretraining checkpoint before launching NEO-S.
+2. Recalibrate MDL only if the reconstruction loss implementation is changed from the paper's scale.
+3. Run a fresh full NEO-S Slurm sweep from the paper-standard entry point.
 
 ### Arithmetic
-
-The Arithmetic task is not implemented yet in this scaffold. Important paper settings to match later:
 
 | Item | Paper Arithmetic NEO / NEO-S |
 | --- | --- |
@@ -80,6 +80,55 @@ The Arithmetic task is not implemented yet in this scaffold. Important paper set
 | NEO-S sampling budget | `B=1024` for Arithmetic length OOD visualizations / scaling |
 | Grounding loss | `0.5` |
 | MDL | scheduled `1.01 -> 0.99` |
+
+Current implementation status:
+
+| Item | Current scaffold |
+| --- | --- |
+| Data generation | implemented as multiplication programs over `x2`, `x3`, `x5`, `x7`; observations are integer values with prime-exponent tensors for stable learning |
+| Split construction | fixed anchors `x2 x2 x2`, `x3 x3 x3`, `x5 x5 x5`, `x7 x7 x7`, then deterministic alpha sampling |
+| Train / ID / Comp lengths | `1-3` |
+| Length OOD lengths | `4-6` |
+| State path | embedding dim `8`; separate `500` epoch state encoder/decoder pretraining script |
+| Policy network | Transformer defaults match paper: `d_model=64`, `d_ff=256`, `4` heads, `6` layers |
+| Transition network | cross-attention defaults match paper: `d_model=32`, `d_ff=128`, `2` heads, `4` layers |
+| Latent action | NEO codebook size `16`; Disc-Mono codebook size `40`; action dim `4` |
+| NEO-S sampling | `--neo-s-samples 1024` default |
+| Losses | VQ commitment loss and state grounding loss enabled; grounding weight `0.5` |
+| MDL | linear schedule from `1.01` to `0.99` across epochs |
+
+Arithmetic smoke run:
+
+```bash
+python scripts/pretrain_arithmetic_state_embedding.py --epochs 2 --batch-size 256 --device cpu --checkpoint-out checkpoints/arithmetic_state_embedding_smoke.pt
+python scripts/run_arithmetic.py \
+  --model neo_s \
+  --train-size 512 \
+  --id-eval-size 128 \
+  --comp-eval-size 128 \
+  --length-eval-size 128 \
+  --epochs 1 \
+  --batch-size 64 \
+  --neo-s-samples 8 \
+  --policy-layers 1 \
+  --transition-layers 1 \
+  --device cpu \
+  --state-checkpoint checkpoints/arithmetic_state_embedding_smoke.pt \
+  --out logs/arithmetic_smoke.json
+```
+
+Paper-scale Arithmetic run uses the script defaults for size, batch, epochs, architecture, and NEO-S sampling budget:
+
+```bash
+python scripts/pretrain_arithmetic_state_embedding.py --device cuda --checkpoint-out checkpoints/arithmetic_state_embedding.pt
+python scripts/run_arithmetic.py \
+  --model neo_s \
+  --alpha 0.66 \
+  --device cuda \
+  --state-checkpoint checkpoints/arithmetic_state_embedding.pt \
+  --freeze-state \
+  --out logs/arithmetic_neo_s_alpha_0.66.json
+```
 
 ## Setup
 
@@ -107,7 +156,7 @@ cd /home/guian/L2T
 scripts/submit_gridworld_pretrain_then_neo_s_full.sh
 ```
 
-This submits the full sweep with a Slurm `afterok` dependency on the state autoencoder pretraining job. The NEO-S run loads `checkpoints/gridworld_state_autoencoder.pt` with `--freeze-state-autoencoder` and writes to:
+This submits the full sweep with a Slurm `afterok` dependency on the paper-standard CNN-VAE pretraining job. The NEO-S run loads `checkpoints/gridworld_state_autoencoder.pt` with `--freeze-state-autoencoder` and writes to:
 
 ```text
 logs/gridworld_neo_s_full_pretrained

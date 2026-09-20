@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="560">
+<rect width="100%" height="100%" fill="white"/>
+<text x="600.0" y="34" text-anchor="middle" font-family="Arial" font-size="22" font-weight="bold">A: Action primitiveness</text>
+<line x1="90" y1="70.0" x2="1150" y2="70.0" stroke="#e5e7eb"/>
+<text x="82" y="74.0" text-anchor="end" font-family="Arial" font-size="11">0.147</text>
+<line x1="90" y1="167.5" x2="1150" y2="167.5" stroke="#e5e7eb"/>
+<text x="82" y="171.5" text-anchor="end" font-family="Arial" font-size="11">0.111</text>
+<line x1="90" y1="265.0" x2="1150" y2="265.0" stroke="#e5e7eb"/>
+<text x="82" y="269.0" text-anchor="end" font-family="Arial" font-size="11">0.0737</text>
+<line x1="90" y1="362.5" x2="1150" y2="362.5" stroke="#e5e7eb"/>
+<text x="82" y="366.5" text-anchor="end" font-family="Arial" font-size="11">0.0369</text>
+<line x1="90" y1="460.0" x2="1150" y2="460.0" stroke="#e5e7eb"/>
+<text x="82" y="464.0" text-anchor="end" font-family="Arial" font-size="11">0</text>
+<text x="266.7" y="488" text-anchor="middle" font-family="Arial" font-size="12">alpha=0.33</text>
+<rect x="178.3" y="360.8" width="141.3" height="99.2" fill="#2563eb"/>
+<text x="620.0" y="488" text-anchor="middle" font-family="Arial" font-size="12">alpha=0.66</text>
+<rect x="531.7" y="387.3" width="141.3" height="72.7" fill="#2563eb"/>
+<text x="973.3" y="488" text-anchor="middle" font-family="Arial" font-size="12">alpha=1.00</text>
+<rect x="885.0" y="129.5" width="141.3" height="330.5" fill="#2563eb"/>
+<text x="20" y="265.0" transform="rotate(-90 20 265.0)" text-anchor="middle" font-family="Arial" font-size="12">rate</text>
+<rect x="90" y="518" width="14" height="14" fill="#2563eb"/>
+<text x="110" y="530" font-family="Arial" font-size="12">primitiveness</text>
+</svg>

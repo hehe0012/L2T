@@ -1,0 +1,96 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1800" height="670" viewBox="0 0 1800 670">
+<rect width="100%" height="100%" fill="white"/>
+<text x="900" y="34" text-anchor="middle" font-family="Arial" font-size="22" font-weight="bold">GridWorld executor diagnostics, seed=42</text>
+<text x="28" y="92" font-family="Arial" font-size="16" font-weight="bold">Latent norm by rollout step</text>
+<line x1="80" y1="110.0" x2="558" y2="110.0" stroke="#e5e7eb"/>
+<text x="72" y="114.0" text-anchor="end" font-family="Arial" font-size="10" fill="#4b5563">22.1</text>
+<line x1="80" y1="164.5" x2="558" y2="164.5" stroke="#e5e7eb"/>
+<text x="72" y="168.5" text-anchor="end" font-family="Arial" font-size="10" fill="#4b5563">19.6</text>
+<line x1="80" y1="219.0" x2="558" y2="219.0" stroke="#e5e7eb"/>
+<text x="72" y="223.0" text-anchor="end" font-family="Arial" font-size="10" fill="#4b5563">17</text>
+<line x1="80" y1="273.5" x2="558" y2="273.5" stroke="#e5e7eb"/>
+<text x="72" y="277.5" text-anchor="end" font-family="Arial" font-size="10" fill="#4b5563">14.5</text>
+<line x1="80" y1="328.0" x2="558" y2="328.0" stroke="#e5e7eb"/>
+<text x="72" y="332.0" text-anchor="end" font-family="Arial" font-size="10" fill="#4b5563">11.9</text>
+<polyline points="80.0,201.2 199.5,185.4 319.0,224.7 438.5,232.9 558.0,221.0" fill="none" stroke="#2563eb" stroke-width="2"/>
+<polyline points="80.0,204.5 199.5,125.0 319.0,168.8 438.5,298.9 558.0,283.2" fill="none" stroke="#059669" stroke-width="2"/>
+<polyline points="80.0,224.3 199.5,149.1 319.0,313.0 438.5,309.5 558.0,237.6" fill="none" stroke="#dc2626" stroke-width="2"/>
+<line x1="80" y1="328" x2="558" y2="328" stroke="#374151"/>
+<line x1="80" y1="110" x2="80" y2="328" stroke="#374151"/>
+<text x="319.0" y="356" text-anchor="middle" font-family="Arial" font-size="11">epoch / step</text>
+<line x1="80" y1="354" x2="98" y2="354" stroke="#2563eb" stroke-width="3"/>
+<text x="103" y="358" font-family="Arial" font-size="10">alpha=0.33</text>
+<line x1="195" y1="354" x2="213" y2="354" stroke="#059669" stroke-width="3"/>
+<text x="218" y="358" font-family="Arial" font-size="10">alpha=0.66</text>
+<line x1="310" y1="354" x2="328" y2="354" stroke="#dc2626" stroke-width="3"/>
+<text x="333" y="358" font-family="Arial" font-size="10">alpha=1.00</text>
+<text x="598" y="92" font-family="Arial" font-size="16" font-weight="bold">Grounding loss by step</text>
+<line x1="650" y1="110.0" x2="1128" y2="110.0" stroke="#e5e7eb"/>
+<text x="642" y="114.0" text-anchor="end" font-family="Arial" font-size="10" fill="#4b5563">2.26</text>
+<line x1="650" y1="164.5" x2="1128" y2="164.5" stroke="#e5e7eb"/>
+<text x="642" y="168.5" text-anchor="end" font-family="Arial" font-size="10" fill="#4b5563">1.86</text>
+<line x1="650" y1="219.0" x2="1128" y2="219.0" stroke="#e5e7eb"/>
+<text x="642" y="223.0" text-anchor="end" font-family="Arial" font-size="10" fill="#4b5563">1.46</text>
+<line x1="650" y1="273.5" x2="1128" y2="273.5" stroke="#e5e7eb"/>
+<text x="642" y="277.5" text-anchor="end" font-family="Arial" font-size="10" fill="#4b5563">1.06</text>
+<line x1="650" y1="328.0" x2="1128" y2="328.0" stroke="#e5e7eb"/>
+<text x="642" y="332.0" text-anchor="end" font-family="Arial" font-size="10" fill="#4b5563">0.662</text>
+<polyline points="650.0,216.0 809.3,218.1 968.7,185.9 1128.0,267.2" fill="none" stroke="#2563eb" stroke-width="2"/>
+<polyline points="650.0,313.0 809.3,264.1 968.7,151.4 1128.0,170.6" fill="none" stroke="#059669" stroke-width="2"/>
+<polyline points="650.0,215.5 809.3,223.0 968.7,125.0 1128.0,240.6" fill="none" stroke="#dc2626" stroke-width="2"/>
+<line x1="650" y1="328" x2="1128" y2="328" stroke="#374151"/>
+<line x1="650" y1="110" x2="650" y2="328" stroke="#374151"/>
+<text x="889.0" y="356" text-anchor="middle" font-family="Arial" font-size="11">epoch / step</text>
+<line x1="650" y1="354" x2="668" y2="354" stroke="#2563eb" stroke-width="3"/>
+<text x="673" y="358" font-family="Arial" font-size="10">alpha=0.33</text>
+<line x1="765" y1="354" x2="783" y2="354" stroke="#059669" stroke-width="3"/>
+<text x="788" y="358" font-family="Arial" font-size="10">alpha=0.66</text>
+<line x1="880" y1="354" x2="898" y2="354" stroke="#dc2626" stroke-width="3"/>
+<text x="903" y="358" font-family="Arial" font-size="10">alpha=1.00</text>
+<text x="1168" y="92" font-family="Arial" font-size="16" font-weight="bold">Reconstruction loss by step</text>
+<line x1="1220" y1="110.0" x2="1698" y2="110.0" stroke="#e5e7eb"/>
+<text x="1212" y="114.0" text-anchor="end" font-family="Arial" font-size="10" fill="#4b5563">59.2</text>
+<line x1="1220" y1="164.5" x2="1698" y2="164.5" stroke="#e5e7eb"/>
+<text x="1212" y="168.5" text-anchor="end" font-family="Arial" font-size="10" fill="#4b5563">45.2</text>
+<line x1="1220" y1="219.0" x2="1698" y2="219.0" stroke="#e5e7eb"/>
+<text x="1212" y="223.0" text-anchor="end" font-family="Arial" font-size="10" fill="#4b5563">31.1</text>
+<line x1="1220" y1="273.5" x2="1698" y2="273.5" stroke="#e5e7eb"/>
+<text x="1212" y="277.5" text-anchor="end" font-family="Arial" font-size="10" fill="#4b5563">17.1</text>
+<line x1="1220" y1="328.0" x2="1698" y2="328.0" stroke="#e5e7eb"/>
+<text x="1212" y="332.0" text-anchor="end" font-family="Arial" font-size="10" fill="#4b5563">3</text>
+<polyline points="1220.0,171.9 1379.3,211.5 1538.7,228.6 1698.0,256.1" fill="none" stroke="#2563eb" stroke-width="2"/>
+<polyline points="1220.0,125.0 1379.3,193.7 1538.7,278.2 1698.0,313.0" fill="none" stroke="#059669" stroke-width="2"/>
+<polyline points="1220.0,168.1 1379.3,276.8 1538.7,278.2 1698.0,254.2" fill="none" stroke="#dc2626" stroke-width="2"/>
+<line x1="1220" y1="328" x2="1698" y2="328" stroke="#374151"/>
+<line x1="1220" y1="110" x2="1220" y2="328" stroke="#374151"/>
+<text x="1459.0" y="356" text-anchor="middle" font-family="Arial" font-size="11">epoch / step</text>
+<line x1="1220" y1="354" x2="1238" y2="354" stroke="#2563eb" stroke-width="3"/>
+<text x="1243" y="358" font-family="Arial" font-size="10">alpha=0.33</text>
+<line x1="1335" y1="354" x2="1353" y2="354" stroke="#059669" stroke-width="3"/>
+<text x="1358" y="358" font-family="Arial" font-size="10">alpha=0.66</text>
+<line x1="1450" y1="354" x2="1468" y2="354" stroke="#dc2626" stroke-width="3"/>
+<text x="1473" y="358" font-family="Arial" font-size="10">alpha=1.00</text>
+<text x="28" y="392" font-family="Arial" font-size="16" font-weight="bold">Executor z sensitivity by step</text>
+<line x1="80" y1="410.0" x2="558" y2="410.0" stroke="#e5e7eb"/>
+<text x="72" y="414.0" text-anchor="end" font-family="Arial" font-size="10" fill="#4b5563">18.3</text>
+<line x1="80" y1="464.5" x2="558" y2="464.5" stroke="#e5e7eb"/>
+<text x="72" y="468.5" text-anchor="end" font-family="Arial" font-size="10" fill="#4b5563">15.3</text>
+<line x1="80" y1="519.0" x2="558" y2="519.0" stroke="#e5e7eb"/>
+<text x="72" y="523.0" text-anchor="end" font-family="Arial" font-size="10" fill="#4b5563">12.2</text>
+<line x1="80" y1="573.5" x2="558" y2="573.5" stroke="#e5e7eb"/>
+<text x="72" y="577.5" text-anchor="end" font-family="Arial" font-size="10" fill="#4b5563">9.23</text>
+<line x1="80" y1="628.0" x2="558" y2="628.0" stroke="#e5e7eb"/>
+<text x="72" y="632.0" text-anchor="end" font-family="Arial" font-size="10" fill="#4b5563">6.21</text>
+<polyline points="80.0,601.2 239.3,582.4 398.7,564.5 558.0,558.4" fill="none" stroke="#2563eb" stroke-width="2"/>
+<polyline points="80.0,613.0 239.3,425.0 398.7,572.9 558.0,594.8" fill="none" stroke="#059669" stroke-width="2"/>
+<polyline points="80.0,544.6 239.3,560.8 398.7,589.3 558.0,587.6" fill="none" stroke="#dc2626" stroke-width="2"/>
+<line x1="80" y1="628" x2="558" y2="628" stroke="#374151"/>
+<line x1="80" y1="410" x2="80" y2="628" stroke="#374151"/>
+<text x="319.0" y="656" text-anchor="middle" font-family="Arial" font-size="11">epoch / step</text>
+<line x1="80" y1="654" x2="98" y2="654" stroke="#2563eb" stroke-width="3"/>
+<text x="103" y="658" font-family="Arial" font-size="10">alpha=0.33</text>
+<line x1="195" y1="654" x2="213" y2="654" stroke="#059669" stroke-width="3"/>
+<text x="218" y="658" font-family="Arial" font-size="10">alpha=0.66</text>
+<line x1="310" y1="654" x2="328" y2="654" stroke="#dc2626" stroke-width="3"/>
+<text x="333" y="658" font-family="Arial" font-size="10">alpha=1.00</text>
+</svg>

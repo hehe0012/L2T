@@ -1,5 +1,7 @@
 #!/bin/sh
-#SBATCH --job-name=guian-l2t-neo-s-pre
+# Full paper-aligned GridWorld run with all five training-monitoring groups.
+# Array index selects alpha; all runs use seed=42.
+#SBATCH --job-name=guian-grid-test42
 #SBATCH --comment=guian
 #SBATCH --partition=all
 #SBATCH --nodes=1
@@ -8,67 +10,39 @@
 #SBATCH --mem=64G
 #SBATCH --gres=gpu:nvidia_h200:1
 #SBATCH --time=24:00:00
-#SBATCH --array=0-8%1
+#SBATCH --array=0-2%1
 #SBATCH --output=/home/guian/L2T/logs/slurm/%x_%A_%a.out
 #SBATCH --error=/home/guian/L2T/logs/slurm/%x_%A_%a.err
 
 set -eu
-
 cd /home/guian/L2T
 
-OUT_DIR="logs/gridworld_neo_s_full_pretrained"
-CKPT_DIR="checkpoints/gridworld_neo_s_full_pretrained"
-mkdir -p "${OUT_DIR}" logs/slurm "${CKPT_DIR}"
-EPOCH_MULTIPLIER="${EPOCH_MULTIPLIER:-1}"
-RUN_TAG="${RUN_TAG:-pretrained}"
+OUT_DIR="logs/gridworld_test_plan_seed42"
+CKPT_DIR="checkpoints/gridworld_test_plan_seed42"
+STATE_AE="checkpoints/gridworld_state_autoencoder.pt"
+mkdir -p "${OUT_DIR}" "${CKPT_DIR}" logs/slurm
 
-STATE_AE="${STATE_AE:-checkpoints/gridworld_state_autoencoder.pt}"
 if [ ! -f "${STATE_AE}" ]; then
   echo "missing state autoencoder checkpoint: ${STATE_AE}" >&2
   exit 2
 fi
 
-echo "job=${SLURM_JOB_ID:-unknown} task=${SLURM_ARRAY_TASK_ID:-0}"
+case "${SLURM_ARRAY_TASK_ID:-0}" in
+  0) ALPHA="0.33"; EPOCHS="100"; WARMUP="0.10"; COMP_EVAL_SIZE="10000" ;;
+  1) ALPHA="0.66"; EPOCHS="50"; WARMUP="0.05"; COMP_EVAL_SIZE="10000" ;;
+  2) ALPHA="1.00"; EPOCHS="50"; WARMUP="0.05"; COMP_EVAL_SIZE="0" ;;
+  *) echo "invalid array index=${SLURM_ARRAY_TASK_ID}" >&2; exit 2 ;;
+esac
+
+SEED="42"
+MODEL="neo_s"
+SAMPLES="64"
+RUN_NAME="gridworld_${MODEL}_alpha${ALPHA}_seed${SEED}_test_plan"
+
+echo "job=${SLURM_JOB_ID:-unknown} task=${SLURM_ARRAY_TASK_ID:-0} alpha=${ALPHA} seed=${SEED}"
 echo "host=$(hostname)"
 date
-echo "cuda_visible_devices=${CUDA_VISIBLE_DEVICES:-unset}"
-command -v nvidia-smi >/dev/null 2>&1 && nvidia-smi || true
-
-TASK_ID="${SLURM_ARRAY_TASK_ID:-0}"
-SEED_INDEX=$((TASK_ID % 3))
-ALPHA_INDEX=$((TASK_ID / 3))
-
-case "$ALPHA_INDEX" in
-  0) ALPHA="0.33" ;;
-  1) ALPHA="0.66" ;;
-  2) ALPHA="1.00" ;;
-  *) echo "invalid ALPHA_INDEX=${ALPHA_INDEX}" >&2; exit 2 ;;
-esac
-
-case "$ALPHA" in
-  "1.00") COMP_EVAL_SIZE="0" ;;
-  *) COMP_EVAL_SIZE="10000" ;;
-esac
-
-case "$ALPHA" in
-  "0.33") EPOCHS="100"; WARMUP="0.1" ;;
-  *) EPOCHS="50"; WARMUP="0.05" ;;
-esac
-if [ -n "${FIXED_EPOCHS:-}" ]; then
-  EPOCHS="${FIXED_EPOCHS}"
-fi
-EPOCHS=$((EPOCHS * EPOCH_MULTIPLIER))
-
-case "$SEED_INDEX" in
-  0) SEED="0" ;;
-  1) SEED="1" ;;
-  2) SEED="2" ;;
-  *) echo "invalid SEED_INDEX=${SEED_INDEX}" >&2; exit 2 ;;
-esac
-
-MODEL="${MODEL:-neo_s}"
-SAMPLES="${SAMPLES:-64}"
-RUN_NAME="gridworld_${MODEL}_alpha${ALPHA}_seed${SEED}_samples${SAMPLES}_${RUN_TAG}"
+nvidia-smi || true
 
 export PYTHONUNBUFFERED=1
 export OMP_NUM_THREADS="${SLURM_CPUS_PER_TASK:-8}"
@@ -96,6 +70,7 @@ export OMP_NUM_THREADS="${SLURM_CPUS_PER_TASK:-8}"
   --hidden-dim 32 \
   --ff-dim 128 \
   --action-dim 16 \
+  --codebook-size 6 \
   --state-path cnn \
   --state-dropout 0.1 \
   --max-steps 10 \
@@ -104,12 +79,17 @@ export OMP_NUM_THREADS="${SLURM_CPUS_PER_TASK:-8}"
   --length-eval-rollout-steps 10 \
   --commitment-cost 0.25 \
   --split-mode paper \
+  --paper-singleton U \
   --train-query-loss-weight 0.0 \
   --vq-loss-weight 1.0 \
   --grounding-loss-weight 0.1 \
   --state-autoencoder-checkpoint "${STATE_AE}" \
   --freeze-state-autoencoder \
   --neo-s-samples "${SAMPLES}" \
+  --validation-size 200 \
+  --validation-interval 1 \
+  --training-metrics-interval 1 \
+  --loss-log-interval 0 \
   --device cuda \
   --out "${OUT_DIR}/${RUN_NAME}.json" \
   --checkpoint-out "${CKPT_DIR}/${RUN_NAME}.pt"

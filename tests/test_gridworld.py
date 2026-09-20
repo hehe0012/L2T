@@ -6,6 +6,7 @@ from l2t.gridworld import (
     apply_program,
     enumerate_programs,
     generate_examples,
+    parse_program,
     split_programs,
 )
 from l2t.models import build_model
@@ -44,6 +45,37 @@ class GridWorldTests(unittest.TestCase):
         self.assertIn((1, 1, 1), train)
         self.assertIn((2, 2, 2), train)
         self.assertIn((3, 3, 3), train)
+
+    def test_paper_program_split_matches_listed_gridworld_programs(self):
+        train, comp = split_programs(alpha=0.33, split_mode="paper")
+
+        self.assertEqual(
+            train,
+            [
+                parse_program(spec)
+                for spec in ("UUU", "DDD", "LLL", "RRR", "U", "LU", "DL", "DR", "DD", "DDL", "DRR")
+            ],
+        )
+        self.assertEqual(
+            comp,
+            [
+                parse_program(spec)
+                for spec in ("L", "R", "D", "LL", "RR", "UU", "RU", "RRL", "LLU", "DLL", "RUU", "DDR", "RRU")
+            ],
+        )
+
+    def test_paper_singleton_swap_moves_u_to_comp_and_l_to_train(self):
+        train, comp = split_programs(alpha=0.33, split_mode="paper", paper_singleton="L")
+        self.assertIn(parse_program("L"), train)
+        self.assertNotIn(parse_program("U"), train)
+        self.assertIn(parse_program("U"), comp)
+        self.assertNotIn(parse_program("L"), comp)
+
+    def test_paper_all_singletons_moves_all_length_one_programs_to_train(self):
+        train, comp = split_programs(alpha=0.33, split_mode="paper", paper_singleton="ALL")
+        for spec in ("U", "D", "L", "R"):
+            self.assertIn(parse_program(spec), train)
+            self.assertNotIn(parse_program(spec), comp)
 
     def test_generated_example_transfer_rule(self):
         examples = generate_examples(n=20, split="train", seed=0, alpha=1.0)
@@ -101,6 +133,40 @@ class GridWorldTests(unittest.TestCase):
         self.assertTrue(torch.all(output.chosen_lengths >= 1))
         self.assertTrue(torch.all(output.chosen_lengths <= 4))
 
+    def test_neo_s_majority_exact_reports_selection_stats(self):
+        import torch
+
+        model = build_model(
+            "neo_s",
+            grid_size=10,
+            codebook_size=6,
+            hidden_dim=16,
+            max_steps=4,
+            neo_s_selection="majority_exact",
+        )
+        support_x = torch.tensor([0, 11, 22])
+        support_y = torch.tensor([1, 12, 23])
+        query_x = torch.tensor([30, 41, 52])
+        query_y = torch.tensor([31, 42, 53])
+
+        output = model(
+            support_x,
+            support_y,
+            query_x,
+            query_y,
+            hard=True,
+            sample_count=3,
+            rollout_steps=4,
+        )
+
+        self.assertIsNotNone(output.exact_candidate_rate)
+        self.assertIsNotNone(output.fallback_rate)
+        self.assertIsNotNone(output.majority_count)
+        self.assertGreaterEqual(float(output.exact_candidate_rate), 0.0)
+        self.assertLessEqual(float(output.exact_candidate_rate), 1.0)
+        self.assertGreaterEqual(float(output.fallback_rate), 0.0)
+        self.assertLessEqual(float(output.fallback_rate), 1.0)
+
     def test_neo_forward_reports_vq_and_grounding_losses(self):
         import torch
 
@@ -123,6 +189,29 @@ class GridWorldTests(unittest.TestCase):
         self.assertIsNotNone(output.grounding_loss)
         self.assertGreaterEqual(float(output.vq_loss.detach()), 0.0)
         self.assertGreaterEqual(float(output.grounding_loss.detach()), 0.0)
+
+    def test_cont_mono_forward_uses_continuous_single_step_action(self):
+        import torch
+
+        model = build_model("cont_mono", grid_size=10, hidden_dim=16, action_dim=8, ff_dim=32)
+        support_x = torch.tensor([0, 11])
+        support_y = torch.tensor([1, 12])
+        query_x = torch.tensor([30, 41])
+        query_y = torch.tensor([31, 42])
+
+        output = model(
+            support_x,
+            support_y,
+            query_x,
+            query_y,
+            rollout_steps=1,
+        )
+
+        self.assertEqual(tuple(output.support_logits.shape), (2, 100))
+        self.assertEqual(tuple(output.query_logits.shape), (2, 100))
+        self.assertEqual(tuple(output.chosen_lengths.shape), (2,))
+        self.assertIsNotNone(output.vq_loss)
+        self.assertGreaterEqual(float(output.vq_loss.detach()), 0.0)
 
     def test_recurrent_policy_supports_longer_eval_than_train_rollout(self):
         import torch

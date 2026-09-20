@@ -13,6 +13,7 @@ import random
 from typing import Iterable, Iterator, Literal, Sequence
 
 BoundaryMode = Literal["wrap", "clamp"]
+SplitMode = Literal["random", "paper"]
 
 ACTIONS: tuple[str, ...] = ("up", "down", "left", "right")
 ACTION_TO_DELTA: dict[str, tuple[int, int]] = {
@@ -20,6 +21,47 @@ ACTION_TO_DELTA: dict[str, tuple[int, int]] = {
     "down": (1, 0),
     "left": (0, -1),
     "right": (0, 1),
+}
+PAPER_TOKEN_TO_ACTION: dict[str, str] = {
+    "U": "up",
+    "D": "down",
+    "L": "left",
+    "R": "right",
+}
+
+
+def parse_program(spec: str) -> tuple[int, ...]:
+    return tuple(ACTIONS.index(PAPER_TOKEN_TO_ACTION[token]) for token in spec)
+
+
+PAPER_GRIDWORLD_SPLITS: dict[float, tuple[tuple[str, ...], tuple[str, ...]]] = {
+    0.33: (
+        ("UUU", "DDD", "LLL", "RRR", "U", "LU", "DL", "DR", "DD", "DDL", "DRR"),
+        ("L", "R", "D", "LL", "RR", "UU", "RU", "RRL", "LLU", "DLL", "RUU", "DDR", "RRU"),
+    ),
+    0.66: (
+        (
+            "UUU",
+            "DDD",
+            "LLL",
+            "RRR",
+            "U",
+            "D",
+            "R",
+            "LU",
+            "DL",
+            "DR",
+            "UU",
+            "DD",
+            "RR",
+            "LUU",
+            "LLU",
+            "DRR",
+            "DDR",
+            "RRU",
+        ),
+        ("L", "LL", "DLL", "RU", "RUU", "DDR"),
+    ),
 }
 
 
@@ -123,6 +165,8 @@ def split_programs(
     alpha: float = 1.0,
     seed: int = 0,
     use_anchors: bool = True,
+    split_mode: SplitMode = "random",
+    paper_singleton: str = "U",
 ) -> tuple[list[tuple[int, ...]], list[tuple[int, ...]]]:
     """Create deterministic train and compositional-OOD program pools.
 
@@ -133,6 +177,32 @@ def split_programs(
 
     if not 0.0 < alpha <= 1.0:
         raise ValueError("alpha must be in (0, 1]")
+
+    if split_mode == "paper":
+        if min_len != 1 or max_len != 3:
+            raise ValueError("paper split is defined for GridWorld short programs of length 1-3")
+        if not use_anchors:
+            raise ValueError("paper split requires anchors")
+        if alpha == 1.0:
+            return enumerate_programs(min_len=min_len, max_len=max_len), []
+        for paper_alpha, (train_specs, comp_specs) in PAPER_GRIDWORLD_SPLITS.items():
+            if abs(alpha - paper_alpha) < 1e-9:
+                if paper_alpha == 0.33 and paper_singleton not in {"U", "L", "ALL"}:
+                    raise ValueError("paper_singleton must be U, L, or ALL")
+                if paper_alpha == 0.33 and paper_singleton == "L":
+                    train_specs = tuple("L" if spec == "U" else spec for spec in train_specs)
+                    comp_specs = tuple("U" if spec == "L" else spec for spec in comp_specs)
+                elif paper_alpha == 0.33 and paper_singleton == "ALL":
+                    train_specs = tuple(
+                        list(train_specs[:4])
+                        + ["U", "D", "L", "R"]
+                        + list(train_specs[5:])
+                    )
+                    comp_specs = tuple(spec for spec in comp_specs if len(spec) != 1)
+                return [parse_program(spec) for spec in train_specs], [parse_program(spec) for spec in comp_specs]
+        raise ValueError("paper split is defined only for alpha 0.33, 0.66, and 1.0")
+    if split_mode != "random":
+        raise ValueError(f"unknown split_mode: {split_mode}")
 
     programs = enumerate_programs(min_len=min_len, max_len=max_len)
     if not use_anchors:
@@ -202,6 +272,8 @@ def generate_examples(
     split_seed: int = 0,
     use_anchors: bool = True,
     boundary: BoundaryMode = "wrap",
+    split_mode: SplitMode = "random",
+    paper_singleton: str = "U",
 ) -> list[GridExample]:
     """Generate a deterministic dataset split."""
 
@@ -212,6 +284,8 @@ def generate_examples(
         alpha=alpha,
         seed=split_seed,
         use_anchors=use_anchors,
+        split_mode=split_mode,
+        paper_singleton=paper_singleton,
     )
 
     if split in {"train", "id"}:
